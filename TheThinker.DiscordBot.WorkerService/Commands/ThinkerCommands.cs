@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Remora.Commands.Attributes;
 using Remora.Discord.API.Abstractions.Objects;
 using Remora.Discord.API.Abstractions.Rest;
@@ -7,13 +6,11 @@ using Remora.Discord.API.Objects;
 using Remora.Discord.Commands.Attributes;
 using Remora.Discord.Commands.Contexts;
 using Remora.Discord.Commands.Feedback.Services;
-using Remora.Rest.Core;
 using Remora.Results;
 using System.ComponentModel;
-using System.Drawing;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using DeepAI;
-using TheThinker.DiscordBot.WorkerService.Extensions;
 
 namespace TheThinker.DiscordBot.WorkerService.Commands;
 
@@ -49,9 +46,14 @@ public class ThinkerCommands : LoggedCommandGroup<ThinkerCommands>
                 : Result.FromError(invalidReply);
         }
 
-        string replyContent = replyContent = await Task.Run(() =>
+        var sw = new Stopwatch();
+        sw.Start();
+        var replyContent = await Task.Run(() =>
             _aiClient.callStandardApi("text-generator", new {text})
                 .output?.ToString());
+        sw.Stop();
+
+        _logger.LogDebug("DeepAI took {elapsed}.", sw.Elapsed);
 
         if (string.IsNullOrWhiteSpace(replyContent))
         {
