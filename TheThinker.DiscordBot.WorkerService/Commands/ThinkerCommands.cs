@@ -7,28 +7,34 @@ using Remora.Discord.Commands.Attributes;
 using Remora.Discord.Commands.Contexts;
 using Remora.Discord.Commands.Feedback.Services;
 using Remora.Results;
+using System;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Net.Http;
 using System.Threading.Tasks;
-using DeepAI;
 
 namespace TheThinker.DiscordBot.WorkerService.Commands;
 
-public class ThinkerCommands : LoggedCommandGroup<ThinkerCommands>
+public class ThinkerCommands : LoggedCommandGroup<ThinkerCommands>, IDisposable
 {
     private readonly FeedbackService _feedbackService;
-    private readonly DeepAI_API _aiClient;
+    private readonly HttpClient _httpClient;
 
     public ThinkerCommands(ILogger<ThinkerCommands> logger,
         FeedbackService feedbackService,
         ICommandContext ctx,
         IDiscordRestGuildAPI guildApi,
         IDiscordRestChannelAPI channelApi,
-        DeepAI_API aiClient)
+        HttpClient httpClient)
         : base(ctx, logger, guildApi, channelApi)
     {
         _feedbackService = feedbackService;
-        _aiClient = aiClient;
+        _httpClient = httpClient;
+    }
+
+    public void Dispose()
+    {
+        _httpClient?.Dispose();
     }
 
     [Command("think")]
@@ -48,9 +54,10 @@ public class ThinkerCommands : LoggedCommandGroup<ThinkerCommands>
 
         var sw = new Stopwatch();
         sw.Start();
-        var replyContent = await Task.Run(() =>
-            _aiClient.callStandardApi("text-generator", new {text})
-                .output?.ToString());
+        var httpMsg = new HttpRequestMessage(HttpMethod.Post, $"https://api.deepai.org/api/text-generator"); //todo
+        httpMsg.Content = new StringContent($"{{ \"text\": \"{text}\" }}", System.Text.Encoding.UTF8, "application/json");
+        var httpResponse = await _httpClient.SendAsync(httpMsg);
+        var replyContent = await httpResponse.Content.ReadAsStringAsync();
         sw.Stop();
 
         _logger.LogDebug("DeepAI took {responseElapsed} for the response: {response}", sw.Elapsed, replyContent);
