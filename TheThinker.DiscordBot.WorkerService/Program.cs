@@ -17,6 +17,7 @@ using System.Net;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
+using DeepAI;
 using TheThinker.ClassLibrary.Models;
 using TheThinker.DiscordBot.WorkerService.Commands;
 using TheThinker.DiscordBot.WorkerService.Models;
@@ -95,11 +96,7 @@ public static class Program
 
                 // DeepAI
                 serviceCollection
-                    .AddSingleton<HttpClient>(_ => {
-                        var client = new HttpClient();
-                        client.DefaultRequestHeaders.Add("Api-Key", configuration.GetValue<string>("DeepAIApiKey"));
-                        return client;
-                    });
+                    .AddSingleton<DeepAI_API>(new DeepAI_API(configuration.GetValue<string>("DeepAIApiKey")));
 
                 // Discord
                 serviceCollection

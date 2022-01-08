@@ -12,7 +12,6 @@ services:
         - DiscordSettings__ShardManagerUri
         - LoggerConfig__ServerUri
         - LoggerConfig__ApiKey
-        - DeepAIApiKey
     depends_on:
         - seq
         - TheThinker.ShardManager.WebApi

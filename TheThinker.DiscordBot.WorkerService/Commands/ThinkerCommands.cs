@@ -7,34 +7,28 @@ using Remora.Discord.Commands.Attributes;
 using Remora.Discord.Commands.Contexts;
 using Remora.Discord.Commands.Feedback.Services;
 using Remora.Results;
-using System;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Net.Http;
 using System.Threading.Tasks;
+using DeepAI;
 
 namespace TheThinker.DiscordBot.WorkerService.Commands;
 
-public class ThinkerCommands : LoggedCommandGroup<ThinkerCommands>, IDisposable
+public class ThinkerCommands : LoggedCommandGroup<ThinkerCommands>
 {
     private readonly FeedbackService _feedbackService;
-    private readonly HttpClient _httpClient;
+    private readonly DeepAI_API _aiClient;
 
     public ThinkerCommands(ILogger<ThinkerCommands> logger,
         FeedbackService feedbackService,
         ICommandContext ctx,
         IDiscordRestGuildAPI guildApi,
         IDiscordRestChannelAPI channelApi,
-        HttpClient httpClient)
+        DeepAI_API aiClient)
         : base(ctx, logger, guildApi, channelApi)
     {
         _feedbackService = feedbackService;
-        _httpClient = httpClient;
-    }
-
-    public void Dispose()
-    {
-        _httpClient?.Dispose();
+        _aiClient = aiClient;
     }
 
     [Command("think")]
@@ -54,10 +48,9 @@ public class ThinkerCommands : LoggedCommandGroup<ThinkerCommands>, IDisposable
 
         var sw = new Stopwatch();
         sw.Start();
-        var httpMsg = new HttpRequestMessage(HttpMethod.Post, $"https://api.deepai.org/api/text-generator"); //todo
-        httpMsg.Content = new StringContent($"{{ \"text\": \"{text}\" }}", System.Text.Encoding.UTF8, "application/json");
-        var httpResponse = await _httpClient.SendAsync(httpMsg);
-        var replyContent = await httpResponse.Content.ReadAsStringAsync();
+        var replyContent = await Task.Run(() =>
+            _aiClient.callStandardApi("text-generator", new {text})
+                .output?.ToString());
         sw.Stop();
 
         _logger.LogDebug("DeepAI took {responseElapsed} for the response: {response}", sw.Elapsed, replyContent);
