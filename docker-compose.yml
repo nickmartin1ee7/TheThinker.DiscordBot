@@ -1,0 +1,41 @@
+version: '3.4'
+
+services:
+  thethinker.discordbot.workerservice:
+    image: ${DOCKER_REGISTRY-}thethinkerdiscordbotworkerservice
+    build:
+      context: .
+      dockerfile: TheThinker.DiscordBot.WorkerService/Dockerfile
+    environment:
+        - DiscordSettings__Token
+        - DiscordSettings__Status
+        - DiscordSettings__ShardManagerUri
+        - LoggerConfig__ServerUri
+        - LoggerConfig__ApiKey
+    depends_on:
+        - seq
+        - TheThinker.ShardManager.WebApi
+
+  seq:
+    image: datalust/seq:2021.3.6681
+    ports:
+        - 8080:80
+    environment:
+        - ACCEPT_EULA=Y
+    volumes:
+        - seqdata:/data
+
+  TheThinker.ShardManager.WebApi:
+    container_name: shardmanager
+    image: ${DOCKER_REGISTRY-}thethinkershardmanagerwebapi
+    environment:
+        - ShardManager__MaxShards
+        - ShardManager__InternalShards
+    ports:
+        - 8081:80
+    build:
+      context: .
+      dockerfile: TheThinker.ShardManager.WebApi/Dockerfile
+
+volumes:
+  seqdata:
