@@ -53,7 +53,7 @@ public class ThinkerCommands : LoggedCommandGroup<ThinkerCommands>
                 .output?.ToString());
         sw.Stop();
 
-        _logger.LogDebug("DeepAI took {elapsed}.", sw.Elapsed);
+        _logger.LogDebug("DeepAI took {responseElapsed} for the response: {response}", sw.Elapsed, replyContent);
 
         if (string.IsNullOrWhiteSpace(replyContent))
         {
