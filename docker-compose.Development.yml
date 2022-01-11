@@ -46,7 +46,7 @@ services:
           - "node.role==manager"
 
   shardmanager:
-    image: nickmartin1ee7/thethinkershardmanagerwebapi:dev
+    image: nickmartin1ee7/discordbotshardmanagerwebapi:dev
     environment:
         - ShardManager__MaxShards
         - ShardManager__InternalShards

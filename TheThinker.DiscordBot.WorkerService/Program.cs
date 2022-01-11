@@ -18,7 +18,7 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
 using DeepAI;
-using TheThinker.ClassLibrary.Models;
+using DiscordBot.ShardManager.Models;
 using TheThinker.DiscordBot.WorkerService.Commands;
 using TheThinker.DiscordBot.WorkerService.Models;
 

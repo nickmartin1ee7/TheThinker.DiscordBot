@@ -47,10 +47,6 @@ jobs:
       if: ${{ github.ref == 'refs/heads/dev' }}
       run: docker buildx build --platform linux/arm64,linux/amd64 -f "TheThinker.DiscordBot.WorkerService/Dockerfile" --force-rm -t nickmartin1ee7/thethinkerdiscordbotworkerservice:dev --push .
 
-    - name: Build Docker Image (ShardManager)
-      if: ${{ github.ref == 'refs/heads/dev' }}
-      run: docker buildx build --platform linux/arm64,linux/amd64 -f "TheThinker.ShardManager.WebApi/Dockerfile" --force-rm -t nickmartin1ee7/thethinkershardmanagerwebapi:dev --push .
-
   deployment:
     runs-on: self-hosted
     needs: publish
