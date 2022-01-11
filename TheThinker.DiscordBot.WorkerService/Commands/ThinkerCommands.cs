@@ -40,18 +40,28 @@ public class ThinkerCommands : LoggedCommandGroup<ThinkerCommands>
 
         if (string.IsNullOrWhiteSpace(text))
         {
-            var invalidReply = await _feedbackService.SendContextualErrorAsync("Your prompt cannot be empty.", ct: CancellationToken);
+            var invalidReply =
+                await _feedbackService.SendContextualErrorAsync("Your prompt cannot be empty.", ct: CancellationToken);
             return invalidReply.IsSuccess
                 ? Result.FromSuccess()
                 : Result.FromError(invalidReply);
         }
 
+        string? replyContent = null;
         var sw = new Stopwatch();
+
         sw.Start();
-        var replyContent = await Task.Run(() =>
-            _aiClient.callStandardApi("text-generator", new {text})
-                .output?.ToString());
-        sw.Stop();
+        try
+        {
+            replyContent = await Task.Run(() =>
+                _aiClient.callStandardApi("text-generator", new {text})
+                    .output?.ToString(), CancellationToken);
+        }
+        catch (TaskCanceledException) {} // Allowed to be thrown if response is no longer needed
+        finally
+        {
+            sw.Stop();
+        }
 
         _logger.LogDebug("DeepAI took {responseElapsed} for the response: {response}", sw.Elapsed, replyContent);
 
